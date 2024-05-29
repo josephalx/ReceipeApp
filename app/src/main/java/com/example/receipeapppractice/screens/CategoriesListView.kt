@@ -1,6 +1,7 @@
 package com.example.receipeapppractice.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.aspectRatio
@@ -26,9 +27,15 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.receipeapppractice.R
 import com.example.receipeapppractice.model.Categories
 import com.example.receipeapppractice.viewModel.MainViewModel
+import com.google.gson.Gson
+import java.net.URLEncoder
 
 @Composable
-fun CategoriesListComposable(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+fun CategoriesListComposable(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+    navigate: (String) -> Unit
+) {
     val categoriesList by viewModel.categoriesList
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -45,27 +52,33 @@ fun CategoriesListComposable(modifier: Modifier = Modifier, viewModel: MainViewM
             }
 
             categoriesList.categoriesList.isNotEmpty() -> {
-                CategoryList(categoriesList.categoriesList)
+                CategoryList(categoriesList.categoriesList, navigate)
             }
         }
     }
 }
 
 @Composable
-fun CategoryList(categoriesList: List<Categories>) {
+fun CategoryList(categoriesList: List<Categories>, navigate: (String) -> Unit) {
     LazyVerticalGrid(GridCells.Fixed(2), modifier = Modifier.fillMaxSize()) {
         items(categoriesList) {
-            CategoriesItem(categories = it)
+            CategoriesItem(categories = it, navigate)
         }
     }
 }
 
 @Composable
-fun CategoriesItem(categories: Categories) {
+fun CategoriesItem(categories: Categories, navigate: (String) -> Unit) {
+    var categoriesJson = Gson().toJson(categories)
+    categoriesJson = URLEncoder.encode(categoriesJson,"utf-8")
     Column(
         modifier = Modifier
+            .padding(8.dp)
             .fillMaxSize()
-            .padding(8.dp),
+            .clickable {
+                navigate("${ScreenList.CategoryDetailScreen.route}/$categoriesJson")
+//                println(categoriesJson)
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
@@ -98,5 +111,5 @@ fun CategoriesPrev() {
             thumbNail = ""
         )
     val list = listOf<Categories>(category, category, category)
-    CategoryList(list)
+    CategoryList(list, {})
 }
